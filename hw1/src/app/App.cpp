@@ -5,6 +5,9 @@
 #include "shape/Pixel.h"
 #include "util/Shader.h"
 
+#include <iostream>
+#include <string>
+std::string state = "mono-line";
 
 App & App::getInstance()
 {
@@ -77,17 +80,93 @@ void App::keyCallback(GLFWwindow * window, int key, int scancode, int action, in
 {
     App & app = *reinterpret_cast<App *>(glfwGetWindowUserPointer(window));
 
-    if (key == GLFW_KEY_A && action == GLFW_RELEASE)
+    if (key == GLFW_KEY_1 && action == GLFW_RELEASE && state != "mono-line")
     {
-        app.animationEnabled = !app.animationEnabled;
+        state = "mono-line";
+        std::cout << state << std::endl;
+        return;
+    }
+
+    if (key == GLFW_KEY_3 && action == GLFW_RELEASE && state != "poly-line")
+    {
+        state = "poly-line";
+        std::cout << state << std::endl;
+        return;
+    }
+
+    if (key == GLFW_KEY_4 && action == GLFW_RELEASE && state != "circle")
+    {
+        state = "circle";
+        std::cout << state << std::endl;
+        return;
+    }
+
+    //ellipse mode transitions
+    if (key == GLFW_KEY_LEFT_SHIFT && action == GLFW_PRESS && state == "circle"){
+        state = "ellipse";
+        std::cout << state << std::endl;
+        return;
+    }
+
+    if (key == GLFW_KEY_LEFT_SHIFT && action == GLFW_RELEASE && state == "ellipse"){
+        state = "circle";
+        std::cout << state << std::endl;
+        return;
     }
 }
 
 
 void App::mouseButtonCallback(GLFWwindow * window, int button, int action, int mods)
 {
+    // std::cout << "key: " << button << " action: " << action << std::endl;
+
+    //use the callback to call the functions that are related to the specific state of the program. 
+    //the method called will be based on the state. each method will take the button and action as parameters to decide what to do
+
+    if (state == "mono-line"){
+        monolineInput(window, button, action);
+    }
+
+    // input management for poly-line
+    else if (state == "poly-line"){
+        polylineInput(window, button, action);
+    }
+
+    // input management for circles
+    else if (state == "circle"){
+        circleInput(window, button, action);
+    }
+
+    // input management for ellipses
+    else if (state == "ellipse"){
+        ellipseInput(window, button, action);
+    }
+}
+
+
+void App::scrollCallback(GLFWwindow * window, double xoffset, double yoffset)
+{}
+
+
+void App::perFrameTimeLogic(GLFWwindow * window)
+{
     App & app = *reinterpret_cast<App *>(glfwGetWindowUserPointer(window));
 
+    double currentFrame = glfwGetTime();
+    app.timeElapsedSinceLastFrame = currentFrame - app.lastFrameTimeStamp;
+    app.lastFrameTimeStamp = currentFrame;
+}
+
+
+void App::processKeyInput(GLFWwindow * window)
+{
+
+}
+
+
+void App::monolineInput(GLFWwindow * window, int button, int action){
+    App & app = *reinterpret_cast<App *>(glfwGetWindowUserPointer(window));
+    // the mouse buttons do different things based on what mode its in. we need the logic here to be seperate from the behavior
     if (button == GLFW_MOUSE_BUTTON_LEFT)
     {
         if (action == GLFW_PRESS)
@@ -116,44 +195,88 @@ void App::mouseButtonCallback(GLFWwindow * window, int button, int action, int m
     }
 }
 
-
-void App::scrollCallback(GLFWwindow * window, double xoffset, double yoffset)
-{
-
-}
-
-
-void App::perFrameTimeLogic(GLFWwindow * window)
-{
+void App::polylineInput(GLFWwindow * window, int button, int action){
     App & app = *reinterpret_cast<App *>(glfwGetWindowUserPointer(window));
+    if (button == GLFW_MOUSE_BUTTON_LEFT)
+    {
+        if (action == GLFW_PRESS)
+        {
+            app.mousePressed = true;
+            app.lastMouseLeftClickPos = app.mousePos;
+            app.lastMouseLeftPressPos = app.mousePos;
+        }
+        else if (action == GLFW_RELEASE)
+        {
+            app.mousePressed = false;
+            app.showPreview = true;
+        }
+    }
 
-    double currentFrame = glfwGetTime();
-    app.timeElapsedSinceLastFrame = currentFrame - app.lastFrameTimeStamp;
-    app.lastFrameTimeStamp = currentFrame;
+    if (button == GLFW_MOUSE_BUTTON_RIGHT)
+    {
+        if (action == GLFW_RELEASE)
+        {
+            app.showPreview = false;
+        }
+    }
 }
 
-
-void App::processKeyInput(GLFWwindow * window)
-{
+void App::circleInput(GLFWwindow * window, int button, int action){
 
 }
 
+void App::ellipseInput(GLFWwindow * window, int button, int action){
 
+}
+
+//extended version
 void App::bresenhamLine(std::vector<Pixel::Vertex> & path, int x0, int y0, int x1, int y1)
 {
+    bool reflect = (std::abs(y1-y0) - std::abs(x1-x0)) > 0 ;
+    if (reflect){
+        int temp = y0;
+        y0 = x0;
+        x0 = temp;
+
+        temp = y1;
+        y1 = x1;
+        x1 = temp;
+    }
+
+    //swap start and end
+    if (x0 > x1){
+        int temp = x0;
+        x0 = x1;
+        x1 = temp;
+
+        temp = y0;
+        y0 = y1;
+        y1 = temp;
+    }
+    
     int dx = std::abs(x1 - x0);
     int dy = std::abs(y1 - y0);
     int p = 2 * dy - dx;
     int twoDy = 2 * dy;
     int twoDyMinusDx = 2 * (dy - dx);
 
+    //flip +y for -slopes
+    int posy = 1; // marks the direction of positive y
+    
+    if (y1-y0 < 0){
+        posy = -1; //swaps the direction of positive y
+    }
+
     int x = x0;
     int y = y0;
 
-    path.emplace_back(x, y, 1.0f, 1.0f, 1.0f);
-
     while (x < x1)
     {
+        if (reflect){
+            path.emplace_back(y, x, 1.0f, 1.0f, 1.0f);
+        }
+        else path.emplace_back(x, y, 1.0f, 1.0f, 1.0f);
+
         ++x;
 
         if (p < 0)
@@ -162,11 +285,9 @@ void App::bresenhamLine(std::vector<Pixel::Vertex> & path, int x0, int y0, int x
         }
         else
         {
-            ++y;
+            y += posy;
             p += twoDyMinusDx;
         }
-
-        path.emplace_back(x, y, 1.0f, 1.0f, 1.0f);
     }
 }
 

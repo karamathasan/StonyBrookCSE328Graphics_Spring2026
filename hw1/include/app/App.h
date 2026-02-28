@@ -32,6 +32,12 @@ private:
     static void perFrameTimeLogic(GLFWwindow *);
     static void processKeyInput(GLFWwindow *);
 
+    //input handling?
+    static void monolineInput(GLFWwindow *, int, int);
+    static void polylineInput(GLFWwindow *, int, int);
+    static void circleInput(GLFWwindow *, int, int);
+    static void ellipseInput(GLFWwindow *, int, int);
+
     // from CMakeLists.txt, compile definition
     static constexpr char kWindowName[] {WINDOW_NAME};
     static constexpr int kWindowWidth {1000};
