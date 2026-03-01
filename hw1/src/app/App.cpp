@@ -56,17 +56,102 @@ void App::cursorPosCallback(GLFWwindow * window, double xpos, double ypos)
     // showPreview is controlled by mouseButtonCallback.
     if (app.showPreview)
     {
-        auto pixel = dynamic_cast<Pixel *>(app.shapes.front().get());
+        if (state == "mono-line"){
+            previewMonoline(app);
+        }
+        else if (state == "poly-line" || state == "poly-line-close"){
+            previewPolyline(app);
+        }
+        else if (state == "circle"){
+            previewCircle(app);
+        }
+        else if (state == "ellipse"){
+            previewEllipse(app);
+        }
+    }
+}
 
+void App::previewMonoline(App & app){
+    auto pixel = dynamic_cast<Pixel *>(app.shapes.front().get());
+
+    auto x0 = static_cast<int>(app.lastMouseLeftPressPos.x);
+    auto y0 = static_cast<int>(app.lastMouseLeftPressPos.y);
+    auto x1 = static_cast<int>(app.mousePos.x);
+    auto y1 = static_cast<int>(app.mousePos.y);
+
+    pixel->path.clear();
+    bresenhamLine(pixel->path, x0, y0, x1, y1);
+    pixel->dirty = true;
+}
+
+// void App::previewPolyline(App & app){
+//     auto pixel_prev = dynamic_cast<Pixel *>(app.shapes.front().get());
+
+//     auto x0 = static_cast<int>(app.lastMouseLeftPressPos.x);
+//     auto y0  = static_cast<int>(app.lastMouseLeftPressPos.y);
+//     auto x1 = static_cast<int>(app.mousePos.x);
+//     auto y1 = static_cast<int>(app.mousePos.y);
+
+//     pixel_prev->path.clear();
+//     bresenhamLine(pixel_prev->path, x0, y0, x1, y1);
+//     pixel_prev->dirty = true;
+// }
+
+void App::previewPolyline(App & app){
+    auto pixel = dynamic_cast<Pixel *>(app.shapes.front().get());
+    pixel->path.clear();
+
+    for (int i = 0; i + 1 < app.polylinePoints.size(); i++){
+        auto x0 = static_cast<int>(app.polylinePoints[i].x);
+        auto y0  = static_cast<int>(app.polylinePoints[i].y);
+        auto x1 = static_cast<int>(app.polylinePoints[i+1].x);
+        auto y1 = static_cast<int>(app.polylinePoints[i+1].y);
+
+        bresenhamLine(pixel->path, x0, y0, x1, y1);
+    }
+
+    if(app.endpoly){
+        app.showPreview = false;
+        // return;
+    }
+    else{
         auto x0 = static_cast<int>(app.lastMouseLeftPressPos.x);
-        auto y0 = static_cast<int>(app.lastMouseLeftPressPos.y);
+        auto y0  = static_cast<int>(app.lastMouseLeftPressPos.y);
         auto x1 = static_cast<int>(app.mousePos.x);
         auto y1 = static_cast<int>(app.mousePos.y);
-
-        pixel->path.clear();
+    
         bresenhamLine(pixel->path, x0, y0, x1, y1);
-        pixel->dirty = true;
     }
+    pixel->dirty = true;
+}
+
+
+
+
+void App::previewCircle(App & app){
+    auto pixel = dynamic_cast<Pixel *>(app.shapes.front().get());
+
+    auto x0 = static_cast<int>(app.lastMouseLeftPressPos.x);
+    auto y0 = static_cast<int>(app.lastMouseLeftPressPos.y);
+    auto x1 = static_cast<int>(app.mousePos.x);
+    auto y1 = static_cast<int>(app.mousePos.y);
+
+    pixel->path.clear();
+    drawCircle(pixel->path, x0, y0, x1, y1);
+    pixel->dirty = true;
+}
+
+void App::previewEllipse(App & app){
+    auto pixel = dynamic_cast<Pixel *>(app.shapes.front().get());
+
+    auto x0 = static_cast<int>(app.lastMouseLeftPressPos.x);
+    auto y0 = static_cast<int>(app.lastMouseLeftPressPos.y);
+    auto x1 = static_cast<int>(app.mousePos.x);
+    auto y1 = static_cast<int>(app.mousePos.y);
+
+    pixel->path.clear();
+    drawEllipse(pixel->path, x0, y0, x1, y1);
+    pixel->dirty = true;
 }
 
 
@@ -88,6 +173,20 @@ void App::keyCallback(GLFWwindow * window, int key, int scancode, int action, in
     }
 
     if (key == GLFW_KEY_3 && action == GLFW_RELEASE && state != "poly-line")
+    {
+        state = "poly-line";
+        std::cout << state << std::endl;
+        return;
+    }
+
+    if (key == GLFW_KEY_C && action == GLFW_PRESS && state == "poly-line")
+    {
+        state = "poly-line-close";
+        std::cout << state << std::endl;
+        return;
+    }
+
+    if (key == GLFW_KEY_C && action == GLFW_RELEASE && state == "poly-line-close")
     {
         state = "poly-line";
         std::cout << state << std::endl;
@@ -118,8 +217,6 @@ void App::keyCallback(GLFWwindow * window, int key, int scancode, int action, in
 
 void App::mouseButtonCallback(GLFWwindow * window, int button, int action, int mods)
 {
-    // std::cout << "key: " << button << " action: " << action << std::endl;
-
     //use the callback to call the functions that are related to the specific state of the program. 
     //the method called will be based on the state. each method will take the button and action as parameters to decide what to do
 
@@ -130,6 +227,10 @@ void App::mouseButtonCallback(GLFWwindow * window, int button, int action, int m
     // input management for poly-line
     else if (state == "poly-line"){
         polylineInput(window, button, action);
+    }
+
+    else if (state == "poly-line-close"){
+        polylineClose(window, button, action);
     }
 
     // input management for circles
@@ -199,6 +300,55 @@ void App::polylineInput(GLFWwindow * window, int button, int action){
     App & app = *reinterpret_cast<App *>(glfwGetWindowUserPointer(window));
     if (button == GLFW_MOUSE_BUTTON_LEFT)
     {
+        auto pixel = dynamic_cast<Pixel *>(app.shapes.front().get());
+
+        if (action == GLFW_PRESS)
+        {
+            if (app.endpoly){
+                app.polylinePoints.clear();
+                app.endpoly = false;
+            }
+            app.mousePressed = true;
+            app.lastMouseLeftClickPos = app.mousePos;
+            app.lastMouseLeftPressPos = app.mousePos;
+        }
+        else if (action == GLFW_RELEASE)
+        {
+            app.polylinePoints.push_back(app.mousePos);
+            app.mousePressed = false;
+            app.showPreview = true;
+        }
+    }
+
+    if (button == GLFW_MOUSE_BUTTON_RIGHT)
+    {
+        if (action == GLFW_RELEASE)
+        {
+            app.showPreview = false;
+            app.endpoly = true;
+        }
+    }
+}
+
+void App::polylineClose(GLFWwindow * window, int button, int action){
+    App & app = *reinterpret_cast<App *>(glfwGetWindowUserPointer(window));
+    if (button == GLFW_MOUSE_BUTTON_RIGHT)
+    {
+        if (action == GLFW_RELEASE)
+        {
+            if (app.polylinePoints.size() > 1){
+                app.polylinePoints.push_back(app.polylinePoints.at(0));
+            }
+            app.endpoly = true;
+            // app.showPreview = false;
+        }
+    }
+}
+
+void App::circleInput(GLFWwindow * window, int button, int action){
+    App & app = *reinterpret_cast<App *>(glfwGetWindowUserPointer(window));
+    if (button == GLFW_MOUSE_BUTTON_LEFT)
+    {
         if (action == GLFW_PRESS)
         {
             app.mousePressed = true;
@@ -221,12 +371,30 @@ void App::polylineInput(GLFWwindow * window, int button, int action){
     }
 }
 
-void App::circleInput(GLFWwindow * window, int button, int action){
-
-}
-
 void App::ellipseInput(GLFWwindow * window, int button, int action){
+    App & app = *reinterpret_cast<App *>(glfwGetWindowUserPointer(window));
+    if (button == GLFW_MOUSE_BUTTON_LEFT)
+    {
+        if (action == GLFW_PRESS)
+        {
+            app.mousePressed = true;
+            app.lastMouseLeftClickPos = app.mousePos;
+            app.lastMouseLeftPressPos = app.mousePos;
+        }
+        else if (action == GLFW_RELEASE)
+        {
+            app.mousePressed = false;
+            app.showPreview = true;
+        }
+    }
 
+    if (button == GLFW_MOUSE_BUTTON_RIGHT)
+    {
+        if (action == GLFW_RELEASE)
+        {
+            app.showPreview = false;
+        }
+    }
 }
 
 //extended version
@@ -290,6 +458,108 @@ void App::bresenhamLine(std::vector<Pixel::Vertex> & path, int x0, int y0, int x
         }
     }
 }
+
+void App::drawCircle(std::vector<Pixel::Vertex> & path, int x0, int y0, int x1, int y1){
+    int dx = x1 - x0;
+    int dy = y1 - y0;
+    int lensqred = dx * dx + dy * dy;
+    double r = std::sqrt((double)lensqred);
+
+    r = (int)std::round(r);
+
+    int x = 0;
+    int y = r;
+    
+    double p = (5.0 / 4) - r;
+    while(x <= y){
+        path.emplace_back( x + x0, y + y0,1.0,1.0,1.0);
+        path.emplace_back( x + x0,-y + y0,1.0,1.0,1.0);
+        path.emplace_back(-x + x0, y + y0,1.0,1.0,1.0);
+        path.emplace_back(-x + x0,-y + y0,1.0,1.0,1.0);
+        
+        path.emplace_back( y + x0, x + y0,1.0,1.0,1.0);
+        path.emplace_back( y + x0,-x + y0,1.0,1.0,1.0);
+        path.emplace_back(-y + x0, x + y0,1.0,1.0,1.0);
+        path.emplace_back(-y + x0,-x + y0,1.0,1.0,1.0);
+
+        x++;
+        if (p < 0){
+            p = p + 2 * x + 1;
+        } else {
+            y--;
+            p = p + 2 * x + 1 - 2 * y;
+        }
+    }
+    
+}
+
+void App::drawEllipse(std::vector<Pixel::Vertex> & path, int x0, int y0, int x1, int y1){
+    int rx = std::abs(x1-x0);
+    int ry = std::abs(y1-y0);
+
+    int rx2 = rx * rx;
+    int ry2 = ry * ry;
+
+    int twoRx2 = 2 * rx2;
+    int twoRy2 = 2 * ry2;
+
+    int x = 0;
+    int y = ry;
+    
+    double p1 = rx2 - ry2 * rx + 0.25 * rx2;
+    // double p =  rx2 - (rx2 * ry) + (0.25 * rx2);
+
+    double px = 0;
+    double py = twoRx2 * y;
+    // while (twoRy2 < twoRx2){
+    while (px < py){
+        path.emplace_back(x0 + x,y0 + y,1,1,1);
+        path.emplace_back(x0 - x,y0 + y,1,1,1);
+        path.emplace_back(x0 + x,y0 - y,1,1,1);
+        path.emplace_back(x0 - x,y0 - y,1,1,1);
+        x++;
+        px += twoRy2;
+        if (p1 < 0){
+            p1 += ry2 + px;
+            // p1 += twoRy2 * x + ry2;
+        }
+        else {
+            y--;
+            py -= twoRx2;
+            p1 += ry2 + px - py;
+
+            // p1 += twoRy2 * x - twoRx2 * y + ry2;
+        }
+    }
+
+    // p = ry2 * (x + 0.5) * (x + 0.5) + rx2 * (y-1) * (y-1) - rx2 * ry2;
+    int p2 = ry2 * (x + 0.5) * (x + 0.5) + rx2 * (y-1) * (y-1) - rx2 * ry2;
+    while (y >= 0){
+        path.emplace_back(x0 + x,y0 + y,1,1,1);
+        path.emplace_back(x0 - x,y0 + y,1,1,1);
+        path.emplace_back(x0 + x,y0 - y,1,1,1);
+        path.emplace_back(x0 - x,y0 - y,1,1,1);
+
+        y--;
+        py -= twoRx2;
+        // if (p>0){
+        if (p2>0){
+            p2 += rx2 - py;
+            // p2 += twoRx2*y + rx2;
+        }
+        else {
+            x++;
+            px += twoRy2;
+            p2 += rx2 - py + px;
+
+            // p2 += twoRy2 * x - twoRx2 * y + twoRx2;
+        }
+    }
+}
+
+// void App::drawQuadratic()
+// void App::drawCubic()
+
 
 
 App::App() : Window(kWindowWidth, kWindowHeight, kWindowName, nullptr, nullptr)

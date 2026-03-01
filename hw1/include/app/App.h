@@ -32,11 +32,19 @@ private:
     static void perFrameTimeLogic(GLFWwindow *);
     static void processKeyInput(GLFWwindow *);
 
-    //input handling?
+    //input handling
     static void monolineInput(GLFWwindow *, int, int);
     static void polylineInput(GLFWwindow *, int, int);
+    static void polylineClose(GLFWwindow *, int, int);
     static void circleInput(GLFWwindow *, int, int);
     static void ellipseInput(GLFWwindow *, int, int);
+
+    //previews
+    static void previewMonoline(App & app);
+    static void previewPolyline(App & app);     
+    static void previewCircle(App & app); 
+    static void previewEllipse(App & app); 
+    // static void 
 
     // from CMakeLists.txt, compile definition
     static constexpr char kWindowName[] {WINDOW_NAME};
@@ -48,6 +56,8 @@ private:
     /// given that its slope m satisfies 0.0 <= m <= 1.0 and that (x0, y0) is the start position.
     /// All pixels on this line are appended to path.
     static void bresenhamLine(std::vector<Pixel::Vertex> & path, int x0, int y0, int x1, int y1);
+    static void drawCircle(std::vector<Pixel::Vertex> & path, int x0, int y0, int x1, int y1);
+    static void drawEllipse(std::vector<Pixel::Vertex> & path, int x0, int y0, int x1, int y1);
 
     App();
 
@@ -78,6 +88,10 @@ private:
     // (while lastMouseLeftClickPos, if there is one, remains the original value).
     glm::dvec2 lastMouseLeftClickPos {0.0, 0.0};
     glm::dvec2 lastMouseLeftPressPos {0.0, 0.0};
+
+    //committed 
+    std::vector<glm::ivec2> polylinePoints;
+    bool endpoly = false;
 };
 
 
