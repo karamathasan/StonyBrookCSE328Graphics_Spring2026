@@ -168,48 +168,46 @@ void App::keyCallback(GLFWwindow * window, int key, int scancode, int action, in
     if (key == GLFW_KEY_1 && action == GLFW_RELEASE && state != "mono-line")
     {
         state = "mono-line";
-        std::cout << state << std::endl;
         return;
     }
 
     if (key == GLFW_KEY_3 && action == GLFW_RELEASE && state != "poly-line")
     {
         state = "poly-line";
-        std::cout << state << std::endl;
         return;
     }
 
     if (key == GLFW_KEY_C && action == GLFW_PRESS && state == "poly-line")
     {
         state = "poly-line-close";
-        std::cout << state << std::endl;
         return;
     }
 
     if (key == GLFW_KEY_C && action == GLFW_RELEASE && state == "poly-line-close")
     {
         state = "poly-line";
-        std::cout << state << std::endl;
         return;
     }
 
     if (key == GLFW_KEY_4 && action == GLFW_RELEASE && state != "circle")
     {
         state = "circle";
-        std::cout << state << std::endl;
         return;
     }
 
     //ellipse mode transitions
     if (key == GLFW_KEY_LEFT_SHIFT && action == GLFW_PRESS && state == "circle"){
         state = "ellipse";
-        std::cout << state << std::endl;
         return;
     }
 
     if (key == GLFW_KEY_LEFT_SHIFT && action == GLFW_RELEASE && state == "ellipse"){
         state = "circle";
-        std::cout << state << std::endl;
+        return;
+    }
+
+    if (key == GLFW_KEY_5 && action == GLFW_RELEASE && state == "parser"){
+        state = "parser";
         return;
     }
 }
@@ -340,7 +338,6 @@ void App::polylineClose(GLFWwindow * window, int button, int action){
                 app.polylinePoints.push_back(app.polylinePoints.at(0));
             }
             app.endpoly = true;
-            // app.showPreview = false;
         }
     }
 }
@@ -497,21 +494,19 @@ void App::drawEllipse(std::vector<Pixel::Vertex> & path, int x0, int y0, int x1,
     int rx = std::abs(x1-x0);
     int ry = std::abs(y1-y0);
 
-    int rx2 = rx * rx;
-    int ry2 = ry * ry;
+    long long rx2 = rx * rx;
+    long long ry2 = ry * ry;
 
-    int twoRx2 = 2 * rx2;
-    int twoRy2 = 2 * ry2;
+    long long twoRx2 = 2 * rx2;
+    long long twoRy2 = 2 * ry2;
 
-    int x = 0;
-    int y = ry;
+    long long x = 0;
+    long long y = ry;
     
-    double p1 = rx2 - ry2 * rx + 0.25 * rx2;
-    // double p =  rx2 - (rx2 * ry) + (0.25 * rx2);
+    long long p1 = ry2 - rx2 * ry + rx2 / 4;
 
-    double px = 0;
-    double py = twoRx2 * y;
-    // while (twoRy2 < twoRx2){
+    long long px = 0;
+    long long py = twoRx2 * y;
     while (px < py){
         path.emplace_back(x0 + x,y0 + y,1,1,1);
         path.emplace_back(x0 - x,y0 + y,1,1,1);
@@ -521,19 +516,15 @@ void App::drawEllipse(std::vector<Pixel::Vertex> & path, int x0, int y0, int x1,
         px += twoRy2;
         if (p1 < 0){
             p1 += ry2 + px;
-            // p1 += twoRy2 * x + ry2;
         }
         else {
             y--;
             py -= twoRx2;
             p1 += ry2 + px - py;
-
-            // p1 += twoRy2 * x - twoRx2 * y + ry2;
         }
     }
 
-    // p = ry2 * (x + 0.5) * (x + 0.5) + rx2 * (y-1) * (y-1) - rx2 * ry2;
-    int p2 = ry2 * (x + 0.5) * (x + 0.5) + rx2 * (y-1) * (y-1) - rx2 * ry2;
+    long long p2 = ry2 * (x * x + x) + ry2 / 4 + rx2 * (y-1) * (y-1) - rx2 * ry2;
     while (y >= 0){
         path.emplace_back(x0 + x,y0 + y,1,1,1);
         path.emplace_back(x0 - x,y0 + y,1,1,1);
@@ -542,17 +533,13 @@ void App::drawEllipse(std::vector<Pixel::Vertex> & path, int x0, int y0, int x1,
 
         y--;
         py -= twoRx2;
-        // if (p>0){
         if (p2>0){
             p2 += rx2 - py;
-            // p2 += twoRx2*y + rx2;
         }
         else {
             x++;
             px += twoRy2;
             p2 += rx2 - py + px;
-
-            // p2 += twoRy2 * x - twoRx2 * y + twoRx2;
         }
     }
 }
