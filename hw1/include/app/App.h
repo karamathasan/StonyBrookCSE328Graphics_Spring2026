@@ -44,6 +44,8 @@ private:
     static void previewPolyline(App & app);     
     static void previewCircle(App & app); 
     static void previewEllipse(App & app); 
+
+    static void parse(App & app);
     // static void 
 
     // from CMakeLists.txt, compile definition
@@ -58,6 +60,11 @@ private:
     static void bresenhamLine(std::vector<Pixel::Vertex> & path, int x0, int y0, int x1, int y1);
     static void drawCircle(std::vector<Pixel::Vertex> & path, int x0, int y0, int x1, int y1);
     static void drawEllipse(std::vector<Pixel::Vertex> & path, int x0, int y0, int x1, int y1);
+
+    static void drawQuadratic(std::vector<Pixel::Vertex> & path, double a, double b, double c);
+    static void drawCubic(std::vector<Pixel::Vertex> & path, double a, double b, double c, double d);
+    static void drawSuperQuadric(std::vector<Pixel::Vertex> & path, int n, double a, double b);
+    
 
     App();
 

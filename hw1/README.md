@@ -54,17 +54,17 @@ Features or parts left unchecked here won't be graded!
 
 - [x] 1. Line Segment (Fully Implemented in This Template)
   - [x] 0 <= m <= 1
-- [ ] 2. Line Segment
-  - [ ] Slope m < -1
-  - [ ] -1 <= m < 0
-  - [ ] 1 < m
-  - [ ] Vertical
-- [ ] 3. Ploy-line & Polygon
-  - [ ] Poly-line
-  - [ ] Polygon
-- [ ] 4. Circle & Ellipse
-  - [ ] Circle
-  - [ ] Ellipse
+- [x] 2. Line Segment
+  - [x] Slope m < -1
+  - [x] -1 <= m < 0
+  - [x] 1 < m
+  - [x] Vertical
+- [x] 3. Ploy-line & Polygon
+  - [x] Poly-line
+  - [x] Polygon
+- [x] 4. Circle & Ellipse
+  - [x] Circle
+  - [x] Ellipse
 - [ ] 5. Polynomial Curve (BONUS PART)
   - [ ] Line
   - [ ] Quadratic Curve
@@ -94,3 +94,13 @@ Note that the working directory must be **exactly** root of your project
 
 Please include any other stuff you would like to mention in this section.
 E.g., format of your config file, and your suggestions on possible combinations of cubic curve parameters. 
+
+### Bonus
+in order to input a function, the function type must be named as the first parameter (acceptable names: "quadratic", "cubic", "super-quadric")
+for quadratics, the next 3 inputs must be floating point numbers
+for cubics, the next 4 inputs must be floating point numbers
+for super-quadrics, the first number must be an integer and the next 2 inputs must be floating point numbers
+
+To enter this state, press the 5 key
+
+Parameter sets:

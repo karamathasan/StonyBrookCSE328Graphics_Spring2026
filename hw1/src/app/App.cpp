@@ -9,6 +9,9 @@
 #include <string>
 std::string state = "mono-line";
 
+#include <fstream>
+#include <sstream>
+
 App & App::getInstance()
 {
     static App instance;
@@ -68,6 +71,10 @@ void App::cursorPosCallback(GLFWwindow * window, double xpos, double ypos)
         else if (state == "ellipse"){
             previewEllipse(app);
         }
+        //parser is responsible for reading config.txt and then figuring out the appropriate thing to draw
+        else if (state == "parser"){
+            parse(app);
+        }
     }
 }
 
@@ -83,19 +90,6 @@ void App::previewMonoline(App & app){
     bresenhamLine(pixel->path, x0, y0, x1, y1);
     pixel->dirty = true;
 }
-
-// void App::previewPolyline(App & app){
-//     auto pixel_prev = dynamic_cast<Pixel *>(app.shapes.front().get());
-
-//     auto x0 = static_cast<int>(app.lastMouseLeftPressPos.x);
-//     auto y0  = static_cast<int>(app.lastMouseLeftPressPos.y);
-//     auto x1 = static_cast<int>(app.mousePos.x);
-//     auto y1 = static_cast<int>(app.mousePos.y);
-
-//     pixel_prev->path.clear();
-//     bresenhamLine(pixel_prev->path, x0, y0, x1, y1);
-//     pixel_prev->dirty = true;
-// }
 
 void App::previewPolyline(App & app){
     auto pixel = dynamic_cast<Pixel *>(app.shapes.front().get());
@@ -126,8 +120,6 @@ void App::previewPolyline(App & app){
 }
 
 
-
-
 void App::previewCircle(App & app){
     auto pixel = dynamic_cast<Pixel *>(app.shapes.front().get());
 
@@ -154,6 +146,98 @@ void App::previewEllipse(App & app){
     pixel->dirty = true;
 }
 
+
+void App::parse(App & app){
+    auto pixel = dynamic_cast<Pixel *>(app.shapes.front().get());
+
+    pixel->path.clear();
+    // app.drawQuadratic(pixel->path, 1,1,1);
+    // // app.drawCircle(pixel->path, 500,500,700,700);
+    // pixel->dirty = true;
+
+    // return;
+    std::string fp = "etc/config.txt";
+    std::ifstream file(fp);
+
+    if (!file.is_open()){
+        std::cerr << "error opening file" << std::endl;
+        return;
+    }
+
+    std::string line;
+    if (!std::getline(file, line)){
+        std::cerr << "file is empty" << std::endl;   
+    }
+    
+    file.close();
+
+    std::stringstream ss(line);
+    std::string type;
+    std::getline(ss, type, ',');
+
+    if (type == "quadratic" || type == "1"){
+        double a, b, c;
+
+        if (ss >> a && ss.ignore(1) &&
+            ss >> b && ss.ignore(1) &&
+            ss >> c) {
+
+            std::cout << "Quadratic: "
+                      << a << ", " << b << ", " << c << "\n";
+            // app.setQuadratic(a, b, c);
+            // state = "parse-quadratic";
+            drawQuadratic(pixel->path, a, b, c);
+            pixel->dirty = true;
+
+        } else {
+            std::cerr << "Invalid quadratic parameters\n";
+        }
+        
+    }
+    else if (type == "cubic" || type == "2"){
+        double a, b, c, d;
+
+        if (ss >> a && ss.ignore(1) &&
+            ss >> b && ss.ignore(1) &&
+            ss >> c && ss.ignore(1) &&
+            ss >> d) {
+
+            // std::cout << "Cubic: "
+            //           << a << ", " << b << ", "
+            //           << c << ", " << d << "\n";
+
+            // state = "parse-cubic";
+            drawCubic(pixel->path, a, b,c, d);
+            pixel->dirty = true;
+                    
+        } else {
+            std::cerr << "Invalid cubic parameters\n";
+        }
+    }
+    else if (type == "super-quadric" || type == "3"){
+        int n;
+        double a, b;
+
+        if (ss >> n && ss.ignore(1) &&
+            ss >> a && ss.ignore(1) &&
+            ss >> b) {
+
+            // std::cout << "Super-Quadric: "
+            //           << n << ", "
+            //           << a << ", "
+            //           << b << "\n";
+
+            // state = "parse-super-quadric";
+            drawSuperQuadric(pixel->path, n, a, b);
+            pixel->dirty = true;
+
+
+        } else {
+            std::cerr << "Invalid super-quadric parameters\n";
+        }
+    }
+    
+}
 
 void App::framebufferSizeCallback(GLFWwindow * window, int width, int height)
 {
@@ -206,7 +290,8 @@ void App::keyCallback(GLFWwindow * window, int key, int scancode, int action, in
         return;
     }
 
-    if (key == GLFW_KEY_5 && action == GLFW_RELEASE && state == "parser"){
+    //bonus
+    if (key == GLFW_KEY_5 && action == GLFW_RELEASE && state != "parser"){
         state = "parser";
         return;
     }
@@ -544,8 +629,106 @@ void App::drawEllipse(std::vector<Pixel::Vertex> & path, int x0, int y0, int x1,
     }
 }
 
-// void App::drawQuadratic()
-// void App::drawCubic()
+void App::drawQuadratic(std::vector<Pixel::Vertex>& path, double a, double b, double c) {
+    // We iterate over x and use the midpoint decision to determine
+    // whether to step in y or stay, handling steep/shallow regions.
+    
+    // Evaluate the curve across the window width
+    // y = ax^2 + bx + c
+    // dy/dx = 2ax + b
+    
+    auto F = [&](double x, double y) -> double {
+        // Implicit form: F(x,y) = ax^2 + bx + c - y = 0
+        return a * x * x + b * x + c - y;
+    };
+    
+    int x = 0;
+    int y = (int)std::round(a * 0 * 0 + b * 0 + c); // starting y at x=0
+    
+    // Clamp starting y to window
+    y = std::max(0, std::min((int)App::kWindowHeight, y));
+    
+    path.emplace_back(x + App::kWindowWidth/2, y + App::kWindowHeight/2, 1, 1, 1);
+    
+    for (x = 1; x <= (int)App::kWindowWidth; ++x) {
+        double slope = 2.0 * a * (x - 1) + b; // dy/dx at previous x
+        
+        if (std::abs(slope) <= 1.0) {
+            // Shallow region: step x by 1, decide y using midpoint
+            // Midpoint is at (x, y + 0.5) — should we increment y?
+            double mid = F(x, y + 0.5);
+            if (a >= 0) {
+                // Concave up: increment y if midpoint is below curve
+                if (mid < 0) y += 1;
+            } else {
+                // Concave down: decrement y if midpoint is above curve
+                if (mid > 0) y -= 1;
+            }
+        } else {
+            // Steep region: need to fill multiple y pixels for this x
+            int y_exact = (int)std::round(a * x * x + b * x + c);
+            // Fill vertically from previous y to new y
+            int y_step = (y_exact > y) ? 1 : -1;
+            while (y != y_exact) {
+                y += y_step;
+                path.emplace_back(x + App::kWindowWidth/2, y + App::kWindowHeight/2, 1, 1, 1);
+            }
+        }
+        
+        path.emplace_back(x + App::kWindowWidth/2, y + App::kWindowHeight/2, 1, 1, 1);
+
+    }
+}
+
+void App::drawCubic(std::vector<Pixel::Vertex> & path, double a, double b, double c, double d){
+    auto F = [&](double x, double y) -> double {
+        return a * x * x * x + b * x * x + c * x + d - y;
+    };
+
+    auto dydx = [&](double x) -> double {
+        return 3.0 * a * x * x + 2.0 * b * x + c;
+    };
+
+    int x = 0;
+    int y = (int)std::round(d); // y at x=0 is just d
+    y = std::max(0, std::min((int)App::kWindowHeight, y));
+
+    path.emplace_back(x + App::kWindowWidth/2, y + App::kWindowHeight/2, 1, 1, 1);
+
+    for (x = 1; x <= (int)App::kWindowWidth; ++x) {
+        double slope = dydx(x - 1);
+
+        if (std::abs(slope) <= 1.0) {
+            // Shallow: use midpoint to decide y adjustment
+            // Evaluate midpoint at (x, y+0.5) and (x, y-0.5)
+            double mid_up   = F(x, y + 0.5);
+            double mid_down = F(x, y - 0.5);
+
+            // The curve is above us if F(x,y) > 0, below if F(x,y) < 0
+            // We want to track the zero crossing
+            double fCurrent = F(x, (double)y);
+            if (fCurrent > 0.5)       y += 1;
+            else if (fCurrent < -0.5) y -= 1;
+
+        } else {
+            // Steep: walk y to close the gap, plotting each step
+            int y_exact = (int)std::round(a * x * x * x + b * x * x + c * x + d);
+            y_exact = std::max(0, std::min((int)App::kWindowHeight/2, y_exact));
+
+            int y_step = (y_exact > y) ? 1 : -1;
+            while (y != y_exact) {
+                y += y_step;
+                path.emplace_back(x + App::kWindowWidth/2, y + App::kWindowHeight/2, 1, 1, 1);
+            }
+        }
+
+        path.emplace_back(x + App::kWindowWidth/2, y + App::kWindowHeight/2, 1, 1, 1);
+    }
+}
+
+void App::drawSuperQuadric(std::vector<Pixel::Vertex> & path, int n, double a, double b){
+
+}
 
 
 
