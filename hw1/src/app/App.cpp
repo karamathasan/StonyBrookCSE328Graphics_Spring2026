@@ -629,54 +629,95 @@ void App::drawEllipse(std::vector<Pixel::Vertex> & path, int x0, int y0, int x1,
     }
 }
 
+// void App::drawQuadratic(std::vector<Pixel::Vertex>& path, double a, double b, double c) {
+//     // We iterate over x and use the midpoint decision to determine
+//     // whether to step in y or stay, handling steep/shallow regions.
+    
+//     // Evaluate the curve across the window width
+//     // y = ax^2 + bx + c
+//     // dy/dx = 2ax + b
+    
+//     auto F = [&](double x, double y) -> double {
+//         // Implicit form: F(x,y) = ax^2 + bx + c - y = 0
+//         return a * x * x + b * x + c - y;
+//     };
+    
+//     int x = 0;
+//     int y = (int)std::round(a * 0 * 0 + b * 0 + c); // starting y at x=0
+    
+//     // Clamp starting y to window
+//     y = std::max(0, std::min((int)App::kWindowHeight, y));
+    
+//     path.emplace_back(x + App::kWindowWidth/2, y + App::kWindowHeight/2, 1, 1, 1);
+    
+//     for (x = 1; x <= (int)App::kWindowWidth; ++x) {
+//         double slope = 2.0 * a * (x - 1) + b; // dy/dx at previous x
+        
+//         if (std::abs(slope) <= 1.0) {
+//             // Shallow region: step x by 1, decide y using midpoint
+//             // Midpoint is at (x, y + 0.5) — should we increment y?
+//             double mid = F(x, y + 0.5);
+//             if (a >= 0) {
+//                 // Concave up: increment y if midpoint is below curve
+//                 if (mid < 0) y += 1;
+//             } else {
+//                 // Concave down: decrement y if midpoint is above curve
+//                 if (mid > 0) y -= 1;
+//             }
+//         } else {
+//             // Steep region: need to fill multiple y pixels for this x
+//             int y_exact = (int)std::round(a * x * x + b * x + c);
+//             // Fill vertically from previous y to new y
+//             int y_step = (y_exact > y) ? 1 : -1;
+//             while (y != y_exact) {
+//                 y += y_step;
+//                 path.emplace_back(x + App::kWindowWidth/2, y + App::kWindowHeight/2, 1, 1, 1);
+//             }
+//         }
+        
+//         path.emplace_back(x + App::kWindowWidth/2, y + App::kWindowHeight/2, 1, 1, 1);
+
+//     }
+// }
+
 void App::drawQuadratic(std::vector<Pixel::Vertex>& path, double a, double b, double c) {
-    // We iterate over x and use the midpoint decision to determine
-    // whether to step in y or stay, handling steep/shallow regions.
-    
-    // Evaluate the curve across the window width
-    // y = ax^2 + bx + c
-    // dy/dx = 2ax + b
-    
-    auto F = [&](double x, double y) -> double {
-        // Implicit form: F(x,y) = ax^2 + bx + c - y = 0
-        return a * x * x + b * x + c - y;
-    };
-    
-    int x = 0;
-    int y = (int)std::round(a * 0 * 0 + b * 0 + c); // starting y at x=0
+
+    int x0 = std::round(- b / (2 * a));
+    int x = x0; // start at the axis of symmetry
+    int y = std::round(a * x * x + b * x + c);
+
+    int concaveup = a > 0 ? 1 : -1;
     
     // Clamp starting y to window
     y = std::max(0, std::min((int)App::kWindowHeight, y));
-    
-    path.emplace_back(x + App::kWindowWidth/2, y + App::kWindowHeight/2, 1, 1, 1);
-    
-    for (x = 1; x <= (int)App::kWindowWidth; ++x) {
-        double slope = 2.0 * a * (x - 1) + b; // dy/dx at previous x
-        
-        if (std::abs(slope) <= 1.0) {
-            // Shallow region: step x by 1, decide y using midpoint
-            // Midpoint is at (x, y + 0.5) — should we increment y?
-            double mid = F(x, y + 0.5);
-            if (a >= 0) {
-                // Concave up: increment y if midpoint is below curve
-                if (mid < 0) y += 1;
-            } else {
-                // Concave down: decrement y if midpoint is above curve
-                if (mid > 0) y -= 1;
-            }
-        } else {
-            // Steep region: need to fill multiple y pixels for this x
-            int y_exact = (int)std::round(a * x * x + b * x + c);
-            // Fill vertically from previous y to new y
-            int y_step = (y_exact > y) ? 1 : -1;
-            while (y != y_exact) {
-                y += y_step;
-                path.emplace_back(x + App::kWindowWidth/2, y + App::kWindowHeight/2, 1, 1, 1);
-            }
-        }
-        
-        path.emplace_back(x + App::kWindowWidth/2, y + App::kWindowHeight/2, 1, 1, 1);
 
+    double slope = 2 * a * x + b; 
+    double p1 = a * (x+1) * (x+1) + b * (x+1) + c - (y + 0.5 * concaveup);
+    
+    while (std::abs(slope) < 1){
+        x++;
+        // if (concaveup * p1 < 0){
+        if (concaveup * p1 > 0){
+            y += concaveup;
+            p1 -= concaveup;
+        }
+        p1 += a * (2 * x + 1 )+ b;
+        slope += 2 * a;
+
+        path.emplace_back(x + App::kWindowWidth/2, y + App::kWindowHeight/2,1,1,1);
+        path.emplace_back(-x + App::kWindowWidth/2, y + App::kWindowHeight/2,1,1,1);
+    }
+
+    while (y < App::kWindowHeight/2){
+        y += concaveup;
+        if (concaveup * p1 < 0){
+            x += 1;
+            p1 += a * (2 * x + 1 )+ b; 
+        }
+        p1 -= concaveup;
+
+        path.emplace_back(x + App::kWindowWidth/2, y + App::kWindowHeight/2,1,1,1);
+        path.emplace_back(-x + App::kWindowWidth/2, y + App::kWindowHeight/2,1,1,1);
     }
 }
 

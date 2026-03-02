@@ -104,3 +104,6 @@ for super-quadrics, the first number must be an integer and the next 2 inputs mu
 To enter this state, press the 5 key
 
 Parameter sets:
+quadratics: 
+  quadratic, 0.1, 0.1, 2
+  quadratic, -0.5, 11, 2
