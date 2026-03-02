@@ -65,9 +65,9 @@ Features or parts left unchecked here won't be graded!
 - [x] 4. Circle & Ellipse
   - [x] Circle
   - [x] Ellipse
-- [ ] 5. Polynomial Curve (BONUS PART)
-  - [ ] Line
-  - [ ] Quadratic Curve
+- [x] 5. Polynomial Curve (BONUS PART)
+  - [x] Line
+  - [x] Quadratic Curve
   - [ ] Cubic Curve
   - [ ] Super-Quadrics
 
