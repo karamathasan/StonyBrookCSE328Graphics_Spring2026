@@ -31,10 +31,11 @@ Circle::Circle(Shader * shader, const std::vector<glm::vec3> & parameters) : GLS
 
 void Circle::render(float timeElapsedSinceLastFrame, bool animate)
 {
-    if (animate)
-    {
-        model = glm::rotate(model, timeElapsedSinceLastFrame);
-    }
+    // if (animate)
+    // {
+    //     model = glm::rotate(model, -timeElapsedSinceLastFrame);
+    //     glm::translate(model,)
+    // }
 
     pShader->use();
     pShader->setMat3("model", model);

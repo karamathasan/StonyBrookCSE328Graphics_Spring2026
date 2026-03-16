@@ -1,10 +1,9 @@
 # HW2
 
-Your Name (Please replace with your name.)
+Your Name Karamat Hasan
+Your SBU ID 116425951
 
-Your SBU ID (Please replace with your 9-digit SBU ID.)
-
-Your Email (Please replace with your email.)
+Your Email karamat.hasan@stonybrook.edu
 
 ## Overview
 

@@ -30,10 +30,12 @@ set(SHAPE
         include/shape/GLShape.h
         include/shape/Renderable.h
         include/shape/Triangle.h
+        include/shape/Ball.h
         src/shape/Circle.cpp
         src/shape/GLShape.cpp
         src/shape/Renderable.cpp
         src/shape/Triangle.cpp
+        src/shape/Ball.cpp
 )
 
 set(ALL_INCLUDE_DIRS

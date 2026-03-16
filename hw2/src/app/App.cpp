@@ -4,8 +4,15 @@
 #include "app/App.h"
 #include "shape/Circle.h"
 #include "shape/Triangle.h"
+#include "shape/Ball.h"
 #include "util/Shader.h"
 
+#include <iostream>
+#include <string>
+std::string state = "balls";
+
+#include <fstream>
+#include <sstream>
 
 App & App::getInstance()
 {
@@ -34,6 +41,33 @@ void App::run()
     }
 }
 
+glm::vec3 App::parse(){
+
+    std::string fp = "etc/config.txt";
+    std::ifstream file(fp);
+
+    if (!file.is_open()){
+        std::cerr << "error opening file" << std::endl;
+        return glm::vec3(0.001,0,0);
+    }
+
+    std::string line;
+    if (!std::getline(file, line)){
+        std::cerr << "file is empty" << std::endl;   
+    }
+    
+    file.close();
+
+    std::stringstream ss(line);
+    std::string r;
+    std::string vx;
+    std::string vy;
+    std::getline(ss, r, ',');    
+    std::getline(ss, vx, ',');    
+    std::getline(ss, vy, ',');    
+
+    return glm::vec3(std::stof(vx), std::stof(vy), std::stof(r));
+}
 
 void App::cursorPosCallback(GLFWwindow * window, double xpos, double ypos)
 {
@@ -65,6 +99,18 @@ void App::keyCallback(GLFWwindow * window, int key, int scancode, int action, in
     {
         app.animationEnabled = !app.animationEnabled;
     }
+
+    if (key == GLFW_KEY_1 && action == GLFW_RELEASE && state != "balls")
+    {
+        state = "balls";
+        return;
+    }
+
+    if (key == GLFW_KEY_3 && action == GLFW_RELEASE && state != "faces")
+    {
+        state = "faces";
+        return;
+    }
 }
 
 
@@ -79,6 +125,11 @@ void App::mouseButtonCallback(GLFWwindow * window, int button, int action, int m
             app.mousePressed = true;
             app.lastMouseLeftClickPos = app.mousePos;
             app.lastMouseLeftPressPos = app.mousePos;
+
+            // spawning logic
+            if (state == "balls"){
+                app.spawnBall(app);
+            }
         }
         else if (action == GLFW_RELEASE)
         {
@@ -89,6 +140,32 @@ void App::mouseButtonCallback(GLFWwindow * window, int button, int action, int m
             #endif
         }
     }
+}
+
+void App::clearShapes(){
+    shapes.clear();
+}
+
+void App::spawnBall(App & app){
+    glm::vec3 init = App::parse();
+    float vx = init.x;
+    float vy = init.y;
+    float r = (init.z) * 500.0f; //convert to viewport float coords
+    std::cout << r << std::endl;
+    std::cout << init.z << std::endl;
+    glm::vec3 params(app.lastMouseLeftClickPos.x, app.lastMouseLeftClickPos.y, r);
+
+    shapes.emplace_back(
+        std::make_unique<Ball>(
+            pCircleShader.get(),
+            params,
+            glm::vec2(vx,vy)
+        )
+    );    
+}
+
+void spawnFace(App & app){
+
 }
 
 
@@ -138,29 +215,26 @@ App::App() : Window(kWindowWidth, kWindowHeight, kWindowName, nullptr, nullptr)
                                              "src/shader/circle.tese.glsl",
                                              "src/shader/circle.frag.glsl");
 
-    shapes.emplace_back(
-            std::make_unique<Triangle>(
-                    pTriangleShader.get(),
-                    std::vector<Triangle::Vertex> {
-                            // Vertex coordinate (screen-space coordinate), Vertex color
-                            {{200.0f, 326.8f}, {1.0f, 0.0f, 0.0f}},
-                            {{800.0f, 326.8f}, {0.0f, 1.0f, 0.0f}},
-                            {{500.0f, 846.4f}, {0.0f, 0.0f, 1.0f}},
-                    }
-            )
-    );
+    // shapes.emplace_back(
+    //         std::make_unique<Triangle>(
+    //                 pTriangleShader.get(),
+    //                 std::vector<Triangle::Vertex> {
+    //                         // Vertex coordinate (screen-space coordinate), Vertex color
+    //                         {{200.0f, 326.8f}, {1.0f, 0.0f, 0.0f}},
+    //                         {{800.0f, 326.8f}, {0.0f, 1.0f, 0.0f}},
+    //                         {{500.0f, 846.4f}, {0.0f, 0.0f, 1.0f}},
+    //                 }
+    //         )
+    // );
 
-    shapes.emplace_back(
-            std::make_unique<Circle>(
-                    pCircleShader.get(),
-                    std::vector<glm::vec3> {
-                            // Coordinate (x, y) of the center and the radius (screen-space)
-                            {200.0f, 326.8f, 200.0f},
-                            {800.0f, 326.8f, 300.0f},
-                            {500.0f, 846.4f, 400.0f}
-                    }
-            )
-    );
+
+    // shapes.emplace_back(
+    //         std::make_unique<Ball>(
+    //                 pCircleShader.get(),
+    //                 glm::vec3(200.0f, 846.8f, 50.0f),
+    //                 glm::vec2(1,0)
+    //         )
+    // );    
 }
 
 

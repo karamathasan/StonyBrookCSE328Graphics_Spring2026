@@ -48,7 +48,7 @@ void Triangle::render(float timeElapsedSinceLastFrame, bool animate)
 {
     if (animate)
     {
-        model = glm::rotate(model, timeElapsedSinceLastFrame);
+        // model = glm::rotate(model, timeElapsedSinceLastFrame);
     }
 
     pShader->use();

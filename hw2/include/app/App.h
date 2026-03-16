@@ -20,6 +20,14 @@ public:
 
     void run();
 
+    static constexpr int getWindowHeight(){
+        return kWindowHeight;
+    }
+
+    static constexpr int getWindowWidth(){
+        return kWindowWidth;
+    }
+
 private:
     static void cursorPosCallback(GLFWwindow *, double, double);
     static void framebufferSizeCallback(GLFWwindow *, int, int);
@@ -29,6 +37,12 @@ private:
 
     static void perFrameTimeLogic(GLFWwindow *);
     static void processKeyInput(GLFWwindow *);
+
+
+    static glm::vec3 parse();
+    void spawnBall(App & app);
+    void spawnFace(App & app);
+    void clearShapes();
 
     // from CMakeLists.txt, compile definition
     static constexpr char kWindowName[] {WINDOW_NAME};
@@ -65,6 +79,8 @@ private:
     // (while lastMouseLeftClickPos, if there is one, remains the original value).
     glm::dvec2 lastMouseLeftClickPos {0.0, 0.0};
     glm::dvec2 lastMouseLeftPressPos {0.0, 0.0};
+
+
 };
 
 
