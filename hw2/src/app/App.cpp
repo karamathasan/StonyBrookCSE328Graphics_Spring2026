@@ -151,17 +151,22 @@ void App::spawnBall(App & app){
     float vx = init.x;
     float vy = init.y;
     float r = (init.z) * 500.0f; //convert to viewport float coords
-    std::cout << r << std::endl;
-    std::cout << init.z << std::endl;
     glm::vec3 params(app.lastMouseLeftClickPos.x, app.lastMouseLeftClickPos.y, r);
+        
+    // std::unique_ptr<Ball> ball = std::make_unique<Ball>(
+    //     pCircleShader.get(),
+    //     params,
+    //     glm::vec2(vx,vy)
+    // );
 
-    shapes.emplace_back(
-        std::make_unique<Ball>(
-            pCircleShader.get(),
-            params,
-            glm::vec2(vx,vy)
-        )
-    );    
+    std::unique_ptr<Ball> ball = std::make_unique<Ball>(
+        pCircleShader.get(),
+        params,
+        glm::vec2(vx,vy)
+    );
+    
+    shapes.emplace_back(std::move(ball));   
+
 }
 
 void spawnFace(App & app){

@@ -31,11 +31,13 @@ set(SHAPE
         include/shape/Renderable.h
         include/shape/Triangle.h
         include/shape/Ball.h
+        include/shape/Face.h
         src/shape/Circle.cpp
         src/shape/GLShape.cpp
         src/shape/Renderable.cpp
         src/shape/Triangle.cpp
         src/shape/Ball.cpp
+        src/shape/Face.cpp
 )
 
 set(ALL_INCLUDE_DIRS

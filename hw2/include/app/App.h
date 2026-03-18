@@ -8,6 +8,8 @@
 
 #include "app/Window.h"
 
+#include "shape/Ball.h"
+#include "shape/Face.h"
 
 class Shader;
 class Renderable;
@@ -26,6 +28,10 @@ public:
 
     static constexpr int getWindowWidth(){
         return kWindowWidth;
+    }
+
+    std::vector<std::unique_ptr<Renderable>>& getShapes(){
+        return shapes;
     }
 
 private:
