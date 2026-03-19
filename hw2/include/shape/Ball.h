@@ -36,7 +36,8 @@ public:
         return radiusNDC;
     }
 
-private:
+protected:
+// private:
     // std::vector<glm::vec3> parameters;
     glm::vec3 parameters;
     
@@ -47,7 +48,6 @@ private:
 
     // std::vector<Ball*>& envBalls;
     // std::vector<std::unique_ptr<Ball>>& envBalls;
-
     void PhysicsUpdate(float dt);
 };
 

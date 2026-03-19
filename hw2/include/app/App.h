@@ -48,12 +48,13 @@ private:
     static glm::vec3 parse();
     void spawnBall(App & app);
     void spawnFace(App & app);
+    void spawnCelestialBody(App & app);
     void clearShapes();
 
     // from CMakeLists.txt, compile definition
     static constexpr char kWindowName[] {WINDOW_NAME};
-    static constexpr int kWindowWidth {1000};
-    static constexpr int kWindowHeight {1000};
+    static constexpr int kWindowWidth {500};
+    static constexpr int kWindowHeight {500};
 
 private:
     App();
@@ -86,8 +87,6 @@ private:
     glm::dvec2 lastMouseLeftClickPos {0.0, 0.0};
     glm::dvec2 lastMouseLeftPressPos {0.0, 0.0};
 
-
 };
-
 
 #endif  // APP_H

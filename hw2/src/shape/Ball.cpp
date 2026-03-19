@@ -104,7 +104,6 @@ bool Ball::checkCollisionBoundary(){
 }
 
 void Ball::PhysicsUpdate(float dt){
-    // velocity += gravNDC * dt;
     velocity += gravNDC;
     position += velocity * dt;
     // std::cout << "position: " << position.x <<", "<< position.y << std::endl;
@@ -117,7 +116,7 @@ void Ball::PhysicsUpdate(float dt){
     } 
 
     if (Ball::checkCollisionOthers()){
-        std::cout << "COLLISION WITH OTHER BALLS" << std::endl;
+        // std::cout << "COLLISION WITH OTHER BALLS" << std::endl;
     }
 }
 
