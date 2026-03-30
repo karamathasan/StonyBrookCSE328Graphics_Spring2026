@@ -22,7 +22,6 @@ App & App::getInstance()
     return instance;
 }
 
-
 void App::run()
 {
     while (!glfwWindowShouldClose(pWindow))
@@ -118,6 +117,7 @@ void App::keyCallback(GLFWwindow * window, int key, int scancode, int action, in
 
     if (key == GLFW_KEY_4 && action == GLFW_RELEASE && state != "celestial")
     {
+        app.clearShapes();
         state = "celestial";
         return;
     }
@@ -212,7 +212,50 @@ void App::spawnBall(App & app){
 }
 
 void App::spawnFace(App & app){
+    glm::vec3 init = App::parse();
+    float vx = init.x;
+    float vy = init.y;
+    float r = (init.z) * 500.0f; //convert to viewport float coords
+    glm::vec3 params(app.lastMouseLeftClickPos.x, app.lastMouseLeftClickPos.y, r);
+        
+    //check if spawn would cause a collision
+    //with boundary
 
+    glm::vec2 positionNDC(
+        2 * app.lastMouseLeftClickPos.x / App::getWindowWidth() - 1.0,
+        2 * app.lastMouseLeftClickPos.y / App::getWindowHeight() - 1.0
+    );
+    bool xBounded = -1 + init.z <= positionNDC.x && positionNDC.x <= 1 - init.z;
+    bool yBounded = -1 + init.z <= positionNDC.y && positionNDC.y <= 1 - init.z;
+
+    if (!(xBounded && yBounded)){
+        std::cout << "rejection by bounds" << std::endl;
+        return;
+    }
+
+    //with other balls
+    for (auto& shape : App::getInstance().getShapes()){
+        Ball * other = dynamic_cast<Ball*>(shape.get());
+
+        if (!other){
+            continue;
+        }
+
+        glm::vec2 diff = other->getPosition() - positionNDC;
+        float dist = glm::length(diff);
+        if (dist <= other->getRadiusNDC() + init.z){
+            std::cout << "rejection by other ball" << std::endl;
+            return;
+        }
+    }
+    
+    shapes.emplace_back(
+        std::make_unique<Ball>(
+            pCircleShader.get(),
+            params,
+            glm::vec2(vx,vy)
+        )
+    );       
 }
 
 void App::spawnCelestialBody(App & app){

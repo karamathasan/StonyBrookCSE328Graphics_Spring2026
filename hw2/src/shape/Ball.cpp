@@ -6,29 +6,16 @@
 #include "shape/Circle.h"
 #include "util/Shader.h"
 
-// glm::mat3 ortho = {
-//     {2.0f/1000, 0, -1.0f},
-//     {0, 2.0f/1000, -1.0f},
-//     {0, 0, 1.0f}
-// };
-
-
-const glm::mat3 ortho = {
+glm::mat3 ortho = {
     {2.0f/App::getWindowWidth(), 0, 0},
     {0, 2.0f/App::getWindowHeight(), 0},
     {-1.0f, -1.0f, 1.0f}
 };
 
 glm::vec3 gravHom(0.0f,-9.8f,0.0f); //prevents shifts
-glm::vec2 gravNDC = (ortho * gravHom);
+glm::vec2 Ball::gravNDC = (ortho * gravHom);
 
 Ball::Ball(Shader * shader, const glm::vec3 parameters, glm::vec2 velocity) : GLShape(shader), parameters(parameters), velocity(velocity)
-
-// Ball::Ball(Shader * shader, const glm::vec3 parameters, glm::vec2 velocity, std::vector<std::unique_ptr<Ball>>& envBalls): 
-//     GLShape(shader), 
-//     parameters(parameters), 
-//     velocity(velocity),
-//     envBalls(envBalls)
 {
     glm::vec3 originHomog(parameters.x, parameters.y, 1);
     originNDC = ortho * originHomog;

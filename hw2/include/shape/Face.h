@@ -9,41 +9,43 @@
 
 #include "shape/GLShape.h"
 #include "shape/Circle.h"
-#include "shape/Triangle.h"
 #include "shape/Ball.h"
 
 class Shader;
 
-// class Face : public Renderable, public GLShape
-class Face : public Renderable, public GLShape
+// class Face : public Ball, public GLShape, public Renderable
+class Face : public Ball
 {
 public:
-    Face(Shader * shader, const glm::vec3 parameters, glm::vec2 velocity);
+    using Ball::Ball;
+    struct Vertex
+    {
+        glm::vec2 position;
+        glm::vec3 color;
+    };
+    struct CircleParam
+    {
+        glm::vec2 position;
+        float radius;
+    };
 
-    ~Face() noexcept override = default;
+    Face(Shader * shader, const glm::vec3 parameters, glm::vec2 velocity);
 
     void render(float timeElapsedSinceLastFrame, bool animate) override;
 
-    bool checkCollisionOthers();
-    bool checkCollisionBoundary();
+    GLuint vaoC {0U};
+    GLuint vboC {0U};
 
-    glm::vec2 getPosition(){
-        return position;
-    }
+    GLuint vaoT {0U};
+    GLuint vboT {0U};
 
-    float getRadiusNDC(){
-        return radiusNDC;
-    }
-
-    private:
-    glm::vec3 parameters;
-    
-    glm::vec2 originNDC;
-    float radiusNDC;
-    glm::vec2 position;
-    glm::vec2 velocity;
+private:
+    std::vector<Vertex> verticesNDC; // global reference frame
+    int generation = 1;
 
     void PhysicsUpdate(float dt);
 };
+
+
 
 #endif

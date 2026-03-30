@@ -12,6 +12,15 @@
 
 class Shader;
 
+// const glm::mat3 ortho = {
+//     {2.0f/App::getWindowWidth(), 0, 0},
+//     {0, 2.0f/App::getWindowHeight(), 0},
+//     {-1.0f, -1.0f, 1.0f}
+// };
+
+// glm::vec3 gravHom(0.0f,-9.8f,0.0f); //prevents shifts
+// glm::vec2 gravNDC = (ortho * gravHom);
+
 class Ball : public Renderable, public GLShape
 {
 public:
@@ -36,6 +45,7 @@ public:
         return radiusNDC;
     }
 
+
 protected:
 // private:
     // std::vector<glm::vec3> parameters;
@@ -46,8 +56,9 @@ protected:
     glm::vec2 position;
     glm::vec2 velocity;
 
-    // std::vector<Ball*>& envBalls;
-    // std::vector<std::unique_ptr<Ball>>& envBalls;
+    // static glm::mat3 ortho;
+    static glm::vec2 gravNDC;
+
     void PhysicsUpdate(float dt);
 };
 
