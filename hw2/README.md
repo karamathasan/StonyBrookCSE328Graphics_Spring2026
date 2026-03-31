@@ -64,23 +64,23 @@ cd ..
 Check all features implemented with "x" in "[ ]"s. 
 Features or parts left unchecked here won't be graded! 
 
-- [ ] 1. Bouncing Ball
-  - [ ] Creation
-  - [ ] Dynamically reading config file
-  - [ ] Movement
-  - [ ] Collison detection
-- [ ] 2. 4+ Bouncing Balls
-- [ ] 3. Bouncing Face
-  - [ ] Creation
-  - [ ] Dynamically reading config file
-  - [ ] Movement
-  - [ ] Collison detection
-  - [ ] Generation Evolution
-- [ ] 4. More Bouncing Faces
-  - [ ] 8+ bouncing faces
-  - [ ] 16+ bonucing faces
-- [ ] 5. BONUS
-  - [ ] Please specify
+- [x] 1. Bouncing Ball
+  - [x] Creation
+  - [x] Dynamically reading config file
+  - [x] Movement
+  - [x] Collison detection
+- [x] 2. 4+ Bouncing Balls
+- [x] 3. Bouncing Face
+  - [x] Creation
+  - [x] Dynamically reading config file
+  - [x] Movement
+  - [x] Collison detection
+  - [x] Generation Evolution
+- [x] 4. More Bouncing Faces
+  - [x] 8+ bouncing faces
+  - [x] 16+ bonucing faces
+- [x] 5. BONUS
+  - [x] Please specify
 
 ## Usage
 
@@ -92,5 +92,5 @@ Features or parts left unchecked here won't be graded!
 
 ## Appendix
 
-Please include any other stuff you would like to mention in this section.
-E.g., format of your config file, and your suggestions on possible combinations of cubic curve parameters. 
+To enter the Celestial Body simulation, press the 4 key. The Celestial Body simulation calculates the forces applied to each of the celestial bodies in the scene
+

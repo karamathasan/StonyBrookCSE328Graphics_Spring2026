@@ -67,6 +67,13 @@ bool Ball::checkCollisionOthers(){
             velocity = v2n + v1t;
             other->velocity = v1n + v2t;
 
+            //correct positions
+            float penetration = radiusNDC + other->getRadiusNDC() - dist;
+            glm::vec2 correction = 0.5f * penetration * n;
+            position -= correction;
+            other->position += correction;
+            
+
             return true;
         }
     }
@@ -91,6 +98,7 @@ bool Ball::checkCollisionBoundary(){
 }
 
 void Ball::PhysicsUpdate(float dt){
+    // velocity += gravNDC * dt;
     velocity += gravNDC;
     position += velocity * dt;
     // std::cout << "position: " << position.x <<", "<< position.y << std::endl;

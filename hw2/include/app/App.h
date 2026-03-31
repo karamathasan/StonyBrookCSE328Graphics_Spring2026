@@ -53,8 +53,8 @@ private:
 
     // from CMakeLists.txt, compile definition
     static constexpr char kWindowName[] {WINDOW_NAME};
-    static constexpr int kWindowWidth {500};
-    static constexpr int kWindowHeight {500};
+    static constexpr int kWindowWidth {600};
+    static constexpr int kWindowHeight {600};
 
 private:
     App();

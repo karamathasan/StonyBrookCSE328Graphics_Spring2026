@@ -2,12 +2,6 @@
 
 // The "a" prefix stands for "attribute".
 layout (location = 0) in vec2 aPosition;
-layout (location = 1) in vec3 aColor;
-
-// These out variables will be passed along the pipeline
-// and be refered with a uniform name in all shader stages,
-// thus we add an "our" prefix.
-out vec3 ourColor;
 
 uniform mat3 model;
 
@@ -21,6 +15,4 @@ void main()
                                             1.0f);
 
     gl_Position = vec4(transformedPosition.xy, 0.0f, 1.0f);
-
-    ourColor = aColor;
 }

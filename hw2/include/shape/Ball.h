@@ -35,10 +35,12 @@ public:
     bool checkCollisionOthers();
     bool checkCollisionBoundary();
     
-    // float radius;
-
     glm::vec2 getPosition(){
         return position;
+    }
+    
+    void setVelocity(glm::vec2 velocity){
+        this->velocity = velocity;
     }
 
     float getRadiusNDC(){

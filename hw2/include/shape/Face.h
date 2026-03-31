@@ -22,16 +22,26 @@ public:
     {
         glm::vec2 position;
         glm::vec3 color;
-    };
-    struct CircleParam
-    {
-        glm::vec2 position;
-        float radius;
+        Vertex() = default;
+        Vertex(const glm::vec2 & p, const glm::vec3 & c) : position(p), color(c) {}
     };
 
-    Face(Shader * shader, const glm::vec3 parameters, glm::vec2 velocity);
+    struct Circ3 //circle with vec 3, bad name, i know
+    {
+        glm::vec3 params;
+        Circ3() = default;
+        Circ3(const glm::vec3 & _params) : params(_params) {}
+        Circ3(float x, float y, float r) : params(x,y,r) {}
+    };
+
+    Face(Shader * circleShader, Shader * triangleShader, const glm::vec3 parameters, glm::vec2 velocity);
 
     void render(float timeElapsedSinceLastFrame, bool animate) override;
+
+    void evolve();
+    void drawFace();
+    // void drawFaceGen(int generation, float cx, float cy, float radius);
+
 
     GLuint vaoC {0U};
     GLuint vboC {0U};
@@ -39,11 +49,23 @@ public:
     GLuint vaoT {0U};
     GLuint vboT {0U};
 
+    Shader * pTriangleShader {nullptr};
+
+    void markEvolve(){
+        // std::cout << "marked for evolution" << std::endl;
+        evolveFlag = true;
+    }
+
 private:
-    std::vector<Vertex> verticesNDC; // global reference frame
+    std::vector<Circ3> circ3s; //global reference frame
+    std::vector<Vertex> triVerts; // global reference frame
     int generation = 1;
 
+    bool evolveFlag = false;
+
     void PhysicsUpdate(float dt);
+    bool checkCollisionOthers();
+    // bool 
 };
 
 

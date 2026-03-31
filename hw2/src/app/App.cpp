@@ -250,12 +250,13 @@ void App::spawnFace(App & app){
     }
     
     shapes.emplace_back(
-        std::make_unique<Ball>(
+        std::make_unique<Face>(
             pCircleShader.get(),
+            pTriangleShader.get(),
             params,
             glm::vec2(vx,vy)
         )
-    );       
+    );
 }
 
 void App::spawnCelestialBody(App & app){
