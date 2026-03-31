@@ -92,5 +92,16 @@ Features or parts left unchecked here won't be graded!
 
 ## Appendix
 
-To enter the Celestial Body simulation, press the 4 key. The Celestial Body simulation calculates the forces applied to each of the celestial bodies in the scene
+To enter the Celestial Body simulation, press the 4 key. The Celestial Body simulation calculates the forces applied to each of the celestial bodies in the scene based on the distance to each body.
 
+etc/celest_config.txt is a file containing initialization parameters for a scene of a celestial body simulation. Each line is given the parameters mass, radius, x-position, y-position, x-velocity, y-velocity (radius, position, and velocity are all in NDC).  
+
+configurations to try:
+```
+2,0.05,0.4,0,0,0.25
+2,0.05,-0.4,0,0,-0.25
+
+```
+100,0.5,0,0,0,0
+1,0.025,-0.8,0,0,-2.35
+```

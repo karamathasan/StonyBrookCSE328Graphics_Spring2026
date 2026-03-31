@@ -70,6 +70,47 @@ glm::vec3 App::parse(){
     return glm::vec3(std::stof(vx), std::stof(vy), std::stof(r));
 }
 
+std::vector<CelestialBody::ParseParams> App::parse_celestial(){
+
+    std::string fp = "etc/celest_config.txt";
+    std::ifstream file(fp);
+
+    std::vector<CelestialBody::ParseParams> out;
+
+    if (!file.is_open()){
+        std::cerr << "error opening file" << std::endl;
+        return out;
+    }
+
+    std::string line;
+
+    while (std::getline(file, line)){
+        if (line.empty()) continue;
+        std::stringstream ss(line);
+        std::string m;
+        std::string r;
+        std::string x;
+        std::string y;
+        std::string vx;
+        std::string vy;
+        std::getline(ss, m, ',');    
+        std::getline(ss, r, ',');    
+        std::getline(ss, x, ',');    
+        std::getline(ss, y, ','); 
+        std::getline(ss, vx, ',');    
+        std::getline(ss, vy, ','); 
+
+        CelestialBody::ParseParams params;
+        params.mass = std::stof(m);
+        params.position = glm::vec2(std::stof(x), std::stof(y));
+        params.radius = std::stof(r);
+        params.velocity = glm::vec2(std::stof(vx), std::stof(vy));
+        out.push_back(params);
+    }
+
+    return out;
+}
+
 void App::cursorPosCallback(GLFWwindow * window, double xpos, double ypos)
 {
     App & app = *reinterpret_cast<App *>(glfwGetWindowUserPointer(window));
@@ -119,6 +160,25 @@ void App::keyCallback(GLFWwindow * window, int key, int scancode, int action, in
     {
         app.clearShapes();
         state = "celestial";
+        for (CelestialBody::ParseParams params : parse_celestial()){
+            float mass = params.mass;
+            glm::vec2 positionGlob(
+                (params.position.x + 1) * App::getWindowWidth()/2 ,
+                (params.position.y + 1) * App::getWindowHeight()/2
+            );
+            glm::vec3 circ(positionGlob, params.radius * App::getWindowWidth()/2);
+            // glm::vec2 vel(param.vx, params.vy);
+
+
+            app.shapes.emplace_back(
+                std::make_unique<CelestialBody>(
+                    app.pCircleShader.get(),
+                    circ,
+                    params.velocity,
+                    mass
+                )
+            ); 
+        }
         return;
     }
        
@@ -167,7 +227,8 @@ void App::spawnBall(App & app){
     glm::vec3 init = App::parse();
     float vx = init.x;
     float vy = init.y;
-    float r = (init.z) * 500.0f; //convert to viewport float coords
+    // float r = (init.z) * 500.0f; //convert to viewport float coords
+    float r = (init.z) * App::getWindowWidth()/2.0f; //convert to viewport float coords
     glm::vec3 params(app.lastMouseLeftClickPos.x, app.lastMouseLeftClickPos.y, r);
         
     //check if spawn would cause a collision
@@ -298,6 +359,7 @@ void App::spawnCelestialBody(App & app){
         }
     }
     
+    //mass is default to 1
     shapes.emplace_back(
         std::make_unique<CelestialBody>(
             pCircleShader.get(),

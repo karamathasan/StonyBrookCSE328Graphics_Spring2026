@@ -10,6 +10,7 @@
 
 #include "shape/Ball.h"
 #include "shape/Face.h"
+#include "shape/CelestialBody.h"
 
 class Shader;
 class Renderable;
@@ -46,6 +47,7 @@ private:
 
 
     static glm::vec3 parse();
+    static std::vector<CelestialBody::ParseParams> parse_celestial();
     void spawnBall(App & app);
     void spawnFace(App & app);
     void spawnCelestialBody(App & app);

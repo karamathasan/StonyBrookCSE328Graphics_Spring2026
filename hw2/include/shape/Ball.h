@@ -32,7 +32,7 @@ public:
     void render(float timeElapsedSinceLastFrame, bool animate) override;
 
     // bool checkCollisionOthers(std::vector<Ball>);
-    bool checkCollisionOthers();
+    virtual bool checkCollisionOthers();
     bool checkCollisionBoundary();
     
     glm::vec2 getPosition(){
